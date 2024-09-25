@@ -1,0 +1,67 @@
+---
+title: "DATA 607 Assignment 2"
+author: Leslie Tavarez
+output: html_document
+date: "2024-09-16"
+---
+# Connect to a MySQL Database
+```{r}
+#libraries
+library(RMySQL)
+library(RMariaDB)
+library(DBI)
+library(tidyverse)
+
+
+#database connection 
+con <- dbConnect(RMySQL::MySQL(),
+                 dbname = "leslie.tavarez85",
+                 host = "cunydata607sql.mysql.database.azure.com",
+                 user = "leslie.tavarez85",
+                 password = "a2c0b934dba8a1ef")
+
+
+#query data from pupularmovies table
+query <- "SELECT * FROM `leslie.tavarez85`.`pupularmovies`;"
+pupularmovies <- dbGetQuery(con, query)
+
+#show the imported dataframe from MySQL
+print(pupularmovies)
+
+#close connection when done 
+dbDisconnect(con)
+```
+
+#Part 4: Missing data strategy 
+There are a few ways to handle missing data but I do not want to imput a zero for NA values, replace it with the mean or make up information. Instead, I will just use the information that I have and analysis that data instead. I will do this by creating new tables for each movie omitting the NA/null values.
+
+```{r}
+#Let's use a visual to show our missing data 
+library(mice)
+md.pattern(pupularmovies)
+```
+
+#First, I need to transpose my data (flip rows and columns)
+```{R}
+movieRatings <- data.frame(t(pupularmovies[-1]))
+colnames(movieRatings) <- pupularmovies[, 1]
+
+print(movieRatings)
+
+```
+#Find mean of each movie omitting null values
+```{R}
+mean(movieRatings$Barbie, na.rm = TRUE)
+mean(movieRatings$`BadBoys:RideOrDie`, na.rm = TRUE)
+mean(movieRatings$`StarWars:TheLastJedi`, na.rm = TRUE)
+mean(movieRatings$`AQuietPlace:DayOne`, na.rm = TRUE)
+mean(movieRatings$FordvsFerrari, na.rm = TRUE)
+mean(movieRatings$DunePtII, na.rm = TRUE)
+
+
+```
+Ford vs. Ferrari had the highest average rating of 4.5/5. Bad Boys and Star Wars are tied for second best with the same average rating of 3.5/5. A Quiet Place scored lower than I thought it would (I watched it in theaters and loved it). It averaged at a 3.3/5. 
+
+In conclusion, I enjoyed using data I was able to obtain from students and fellow teachers. I did not use a software to gather information since I wanted it to be more interactive but I normally have my students use smartsheet, google or survey monkey to make surveys! 
+
+Standariziation may increase the reliabilty and the consistency of surveys. I think it makes it easier to compare results. But, as a teacher who has taken way too many surveys, sometimes I think it may result in response bias and it is difficult to capture complex information. Respondents may not be able to explain their thoughts or experience with a simple rating scale. While doing this lab, I was able to hear their perspective on each movie and their reason why they voted the way they did. If I were to standardize the rating for this lab specifically, I can have people rate from 1-5 to the nearest integer instead of accepting decimal values. 
